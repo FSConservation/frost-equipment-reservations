@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Equipment Reservations · Frost Science</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --blue:#0057A8;--blue-lt:#E8F1FB;--blue-mid:#B3CEEE;
+  --amber:#F59E0B;--amber-lt:#FEF3C7;
+  --red:#DC2626;--red-lt:#FEE2E2;
+  --green:#16A34A;--green-lt:#DCFCE7;
+  --purple:#7C3AED;--purple-lt:#EDE9FE;
+  --teal-lt:#E0F2EF;
+  --g50:#F8F9FA;--g100:#F1F3F5;--g200:#E9ECEF;--g300:#DEE2E6;
+  --g400:#CED4DA;--g500:#ADB5BD;--g600:#6C757D;--g700:#495057;
+  --g800:#343A40;--g900:#212529;
+  --r-sm:6px;--r-md:10px;--r-lg:16px;
+  --sh-sm:0 1px 3px rgba(0,0,0,.08);--sh-md:0 4px 24px rgba(0,0,0,.13);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--g50);color:var(--g900);min-height:100vh;font-size:15px;line-height:1.6}
+
+/* HEADER */
+.site-header{background:#fff;border-bottom:1px solid var(--g200);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;box-shadow:var(--sh-sm)}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:36px;height:36px;background:var(--blue);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:20px;height:20px;fill:#fff}
+.logo-text{font-size:15px;font-weight:600}
+.logo-sub{font-size:12px;color:var(--g500);font-weight:400}
+.hnav{display:flex;gap:4px;align-items:center}
+.hnav button{background:none;border:none;padding:8px 14px;border-radius:var(--r-sm);font-size:14px;font-family:'DM Sans',sans-serif;color:var(--g600);cursor:pointer;font-weight:500;transition:background .15s,color .15s}
+.hnav button:hover{background:var(--g100);color:var(--g900)}
+.hnav button.active{background:var(--blue-lt);color:var(--blue)}
+.admin-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--g600);background:var(--g100);border:1px solid var(--g200);border-radius:20px;padding:4px 10px;margin-left:4px}
+
+/* LAYOUT */
+.main{max-width:1000px;margin:0 auto;padding:2rem 1.5rem}
+.page{display:none}.page.visible{display:block}
+.page-title{font-size:24px;font-weight:600;margin-bottom:4px}
+.page-sub{font-size:14px;color:var(--g500);margin-bottom:1.75rem}
+
+/* CARDS */
+.card{background:#fff;border:1px solid var(--g200);border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.25rem;box-shadow:var(--sh-sm)}
+.card-title{font-size:12px;font-weight:600;color:var(--g500);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem}
+
+/* FORM */
+.field{margin-bottom:1rem}
+.field label{display:block;font-size:13px;font-weight:500;color:var(--g700);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1px solid var(--g300);border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--g900);background:#fff;transition:border-color .15s,box-shadow .15s;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,87,168,.12)}
+.field textarea{height:72px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+/* EQUIPMENT SELECTION */
+.equip-row{display:flex;align-items:center;gap:12px;padding:12px;border:1.5px solid var(--g200);border-radius:var(--r-md);margin-bottom:8px;cursor:pointer;transition:border-color .15s,background .15s}
+.equip-row:hover{border-color:var(--blue-mid);background:var(--g50)}
+.equip-row.selected{border-color:var(--blue);background:var(--blue-lt)}
+.equip-row.unavailable{opacity:.4;cursor:not-allowed;pointer-events:none}
+.equip-check{width:20px;height:20px;border:2px solid var(--g300);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.equip-row.selected .equip-check{background:var(--blue);border-color:var(--blue)}
+.equip-check-inner{width:10px;height:10px;background:#fff;border-radius:2px;display:none}
+.equip-row.selected .equip-check-inner{display:block}
+.equip-icon{font-size:22px;flex-shrink:0}
+.equip-info{flex:1;min-width:0}
+.equip-name{font-size:14px;font-weight:600;color:var(--g800)}
+.equip-avail{font-size:12px;color:var(--g500)}
+.equip-qty-area{display:flex;align-items:center;gap:8px}
+.qty-btn{width:28px;height:28px;border:1px solid var(--g300);border-radius:var(--r-sm);background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--g700);transition:background .1s;font-family:'DM Sans',sans-serif;line-height:1}
+.qty-btn:hover{background:var(--g100)}
+.qty-num{font-size:15px;font-weight:600;min-width:24px;text-align:center;font-family:'DM Mono',monospace}
+.units-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.unit-tag{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;padding:2px 7px;border-radius:3px;background:var(--blue-lt);color:var(--blue);border:1px solid var(--blue-mid)}
+
+/* LOCATION TOGGLE */
+.loc-toggle{display:flex;gap:8px;margin-top:4px}
+.loc-btn{flex:1;padding:9px;border:1.5px solid var(--g300);border-radius:var(--r-sm);background:#fff;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;font-weight:500;color:var(--g600);transition:all .15s;text-align:center}
+.loc-btn:hover{border-color:var(--blue-mid);color:var(--g900)}
+.loc-btn.active{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
+
+/* RECURRENCE */
+.recur-options{margin-top:10px;padding:14px;background:var(--g50);border-radius:var(--r-md);border:1px solid var(--g200)}
+.recur-grid{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.recur-day-btn{padding:7px 12px;border:1px solid var(--g300);border-radius:var(--r-sm);background:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;text-align:center;transition:all .15s;color:var(--g600)}
+.recur-day-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;border:none;outline:none}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:#004a8f}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#b91c1c}
+.btn-sm{padding:5px 12px;font-size:12px;border:1px solid var(--g300);background:#fff;color:var(--g700);border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .1s}
+.btn-sm:hover{background:var(--g100)}
+.btn-approve{color:var(--green);border-color:#86efac}.btn-approve:hover{background:var(--green-lt)}
+.btn-deny{color:var(--red);border-color:#fca5a5}.btn-deny:hover{background:var(--red-lt)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;letter-spacing:.02em}
+.badge-pending{background:var(--amber-lt);color:#92400e}
+.badge-approved{background:var(--green-lt);color:#14532d}
+.badge-denied{background:var(--red-lt);color:#7f1d1d}
+.badge-offsite{background:#f3e8ff;color:#6b21a8;font-size:10px;padding:2px 6px}
+.badge-onsite{background:var(--teal-lt);color:#065f46;font-size:10px;padding:2px 6px}
+
+/* ALERTS */
+.alert{padding:12px 16px;border-radius:var(--r-md);font-size:14px;margin-bottom:1rem;display:none}
+.alert-success{background:var(--green-lt);color:#14532d;border:1px solid #86efac}
+.alert-error{background:var(--red-lt);color:#7f1d1d;border:1px solid #fca5a5}
+.alert-info{background:var(--blue-lt);color:var(--blue);border:1px solid var(--blue-mid)}
+
+/* CALENDAR */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px}
+.cal-nav h2{font-size:18px;font-weight:600}
+.cal-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.cal-filter-btn{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--g300);background:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--g600);transition:all .15s}
+.cal-filter-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.cal-table{width:100%;border-collapse:collapse}
+.cal-table th{font-size:11px;font-weight:600;color:var(--g500);text-align:center;padding:6px 2px;letter-spacing:.05em;text-transform:uppercase}
+.cal-cell{border:1px solid var(--g200);vertical-align:top;padding:6px;min-height:90px;width:14.28%}
+.cal-cell.other{background:var(--g50)}
+.cal-cell.today{background:var(--blue-lt)}
+.day-num{font-size:11px;font-weight:600;color:var(--g400);margin-bottom:3px;display:block}
+.cal-cell.today .day-num{color:var(--blue)}
+.cal-pill{display:block;font-size:10px;font-weight:500;padding:3px 5px;border-radius:3px;margin-bottom:2px;cursor:pointer;line-height:1.3;transition:opacity .1s}
+.cal-pill:hover{opacity:.8}
+.cal-pill.approved{background:var(--green-lt);color:#14532d}
+.cal-pill.pending{background:var(--amber-lt);color:#92400e}
+.cal-pill.denied{background:var(--red-lt);color:#7f1d1d}
+.cal-legend{display:flex;gap:16px;margin-top:1rem;font-size:12px;color:var(--g500)}
+.cal-legend span{display:flex;align-items:center;gap:5px}
+.ldot{width:10px;height:10px;border-radius:2px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:200;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:var(--r-lg);padding:1.75rem;max-width:500px;width:100%;box-shadow:var(--sh-md);position:relative;max-height:90vh;overflow-y:auto}
+.modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:20px;cursor:pointer;color:var(--g500);line-height:1}
+.modal-close:hover{color:var(--g900)}
+.modal h3{font-size:17px;font-weight:600;margin-bottom:1rem}
+.modal-field{display:flex;gap:8px;margin-bottom:8px;font-size:13px}
+.modal-label{color:var(--g500);min-width:100px;font-weight:500;flex-shrink:0}
+.modal-val{color:var(--g800);flex:1}
+.modal-units{font-family:'DM Mono',monospace;font-size:11px;color:var(--blue);margin-top:2px;line-height:1.8}
+
+/* ADMIN LOGIN */
+.auth-wrap{min-height:calc(100vh - 64px);display:flex;align-items:center;justify-content:center;padding:2rem}
+.auth-card{background:#fff;border:1px solid var(--g200);border-radius:var(--r-lg);padding:2.5rem;max-width:400px;width:100%;box-shadow:var(--sh-md);text-align:center}
+.auth-card .auth-icon{font-size:40px;margin-bottom:1rem}
+.auth-card h2{font-size:20px;font-weight:600;margin-bottom:6px}
+.auth-card p{font-size:13px;color:var(--g500);margin-bottom:1.5rem}
+.auth-card .field{text-align:left}
+.auth-tabs{display:flex;gap:0;margin-bottom:1.5rem;border:1px solid var(--g200);border-radius:var(--r-sm);overflow:hidden}
+.auth-tab{flex:1;padding:8px;background:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;color:var(--g500);transition:all .15s}
+.auth-tab.active{background:var(--blue);color:#fff}
+
+/* ADMIN PANEL */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.stat-card{background:#fff;border:1px solid var(--g200);border-radius:var(--r-md);padding:1rem 1.25rem}
+.stat-val{font-size:28px;font-weight:600;font-family:'DM Mono',monospace}
+.stat-label{font-size:12px;color:var(--g500);margin-top:2px}
+.stat-pending .stat-val{color:var(--amber)}
+.stat-approved .stat-val{color:var(--green)}
+.stat-denied .stat-val{color:var(--red)}
+
+/* BOOKING ROWS */
+.booking-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--g100)}
+.booking-row:last-child{border-bottom:none}
+.booking-main{flex:1;min-width:0}
+.booking-name{font-size:14px;font-weight:600;color:var(--g900)}
+.booking-email{font-size:12px;color:var(--g500)}
+.booking-detail{font-size:13px;color:var(--g600);margin-top:2px}
+.booking-units{font-family:'DM Mono',monospace;font-size:10px;color:var(--blue);margin-top:3px;line-height:1.7}
+.booking-notes{font-size:12px;color:var(--g400);font-style:italic;margin-top:2px}
+.booking-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap}
+
+/* ADMIN TABLE */
+.admins-table{width:100%;border-collapse:collapse;font-size:13px}
+.admins-table th{text-align:left;font-size:11px;font-weight:600;color:var(--g500);text-transform:uppercase;letter-spacing:.06em;padding:8px 10px;border-bottom:1px solid var(--g200)}
+.admins-table td{padding:10px;border-bottom:1px solid var(--g100);vertical-align:middle}
+.admins-table tr:last-child td{border-bottom:none}
+.admin-avatar{width:32px;height:32px;border-radius:50%;background:var(--purple-lt);color:var(--purple);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;margin-right:8px;flex-shrink:0}
+
+/* EQUIP MGMT */
+.equip-mgmt-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--g100)}
+.equip-mgmt-row:last-child{border-bottom:none}
+.equip-mgmt-name{flex:1;font-size:14px;font-weight:500}
+.equip-mgmt-count{font-family:'DM Mono',monospace;font-size:13px;color:var(--g500)}
+
+/* LOOKUP */
+.lookup-bar{display:flex;gap:8px;margin-bottom:1.25rem}
+.lookup-bar .field{flex:1;margin-bottom:0}
+
+/* CHANGE PW MODAL */
+.pw-modal{background:#fff;border-radius:var(--r-lg);padding:2rem;max-width:380px;width:100%;box-shadow:var(--sh-md)}
+.pw-modal h3{font-size:17px;font-weight:600;margin-bottom:6px}
+.pw-modal p{font-size:13px;color:var(--g500);margin-bottom:1.25rem}
+
+@media(max-width:640px){
+  .grid2,.stats-grid{grid-template-columns:1fr}
+  .site-header{padding:0 1rem}
+  .hnav button{padding:8px 10px;font-size:12px}
+  .main{padding:1.25rem 1rem}
+  .auth-wrap{padding:1rem}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M20 7H4C2.9 7 2 7.9 2 9v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm0 12H4V9h16v10zM12 3H8v2h8V3h-4z"/></svg>
+    </div>
+    <div>
+      <div class="logo-text">Equipment Reservations</div>
+      <div class="logo-sub">Frost Science Museum</div>
+    </div>
+  </div>
+  <nav class="hnav">
+    <button class="active" onclick="showPage('book')">Book</button>
+    <button onclick="showPage('calendar')">Calendar</button>
+    <button onclick="showPage('mybookings')">My Bookings</button>
+    <button onclick="showPage('admin')">Admin</button>
+    <span class="admin-badge" id="admin-header-badge" style="display:none">
+      <span id="admin-header-name"></span>
+    </span>
+  </nav>
+</header>
+
+<!-- BOOKING DETAIL MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal-box">
+    <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    <h3 id="modal-title">Booking Details</h3>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal-overlay" id="pw-modal-overlay">
+  <div class="pw-modal">
+    <h3>Set your password</h3>
+    <p>This is your first login. Please set a personal password before continuing.</p>
+    <div class="field"><label>New password *</label><input type="password" id="pw-new" placeholder="At least 8 characters" /></div>
+    <div class="field"><label>Confirm password *</label><input type="password" id="pw-confirm" placeholder="Repeat password" /></div>
+    <div id="pw-error" style="font-size:13px;color:var(--red);margin-bottom:10px;display:none"></div>
+    <button class="btn btn-primary" style="width:100%" onclick="saveNewPassword()">Set password & continue →</button>
+  </div>
+</div>
+
+<main class="main">
+
+  <!-- BOOK PAGE -->
+  <div id="page-book" class="page visible">
+    <div class="page-title">Reserve Equipment</div>
+    <div class="page-sub">Select one or more equipment types, choose your dates, and submit for admin approval.</div>
+    <div id="alert-success" class="alert alert-success">✓ Request submitted! You'll be notified by email once an admin reviews your booking.</div>
+    <div id="alert-error" class="alert alert-error"></div>
+
+    <div class="card">
+      <div class="card-title">1 — Select equipment & quantity</div>
+      <div id="equip-select-area"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2 — Your information</div>
+      <div class="grid2">
+        <div class="field"><label>Full name *</label><input type="text" id="f-name" placeholder="First Last" /></div>
+        <div class="field"><label>Email address *</label><input type="email" id="f-email" placeholder="you@frostscience.org" /></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">3 — Date & time</div>
+      <div class="grid2">
+        <div class="field">
+          <label>Booking type *</label>
+          <select id="f-type" onchange="onTypeChange()">
+            <option value="day">Full day</option>
+            <option value="hour">By the hour</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Start date *</label>
+          <input type="date" id="f-date-start" onchange="onDateChange()" />
+        </div>
+        <div class="field" id="field-time-start" style="display:none"><label>Start time *</label><input type="time" id="f-start" /></div>
+        <div class="field" id="field-time-end" style="display:none"><label>End time *</label><input type="time" id="f-end" /></div>
+      </div>
+
+      <div class="recur-options" id="recur-options">
+        <div class="field" style="margin-bottom:10px">
+          <label>Booking pattern</label>
+          <select id="f-recur-type" onchange="onRecurChange()" style="font-size:14px">
+            <option value="single">Single day</option>
+            <option value="daily">Every day in range</option>
+            <option value="weekly">Specific days of week (recurring)</option>
+          </select>
+        </div>
+        <div class="grid2" id="recur-date-range" style="display:none">
+          <div class="field" style="margin-bottom:0">
+            <label>End date *</label>
+            <input type="date" id="f-date-end" onchange="onDateChange()" />
+          </div>
+          <div></div>
+        </div>
+        <div id="recur-days-wrap" style="display:none;margin-top:10px">
+          <label style="font-size:13px;font-weight:500;color:var(--g700);display:block;margin-bottom:8px">Repeat on *</label>
+          <div class="recur-grid">
+            <button class="recur-day-btn" data-day="1" onclick="toggleRecurDay(this)">Mon</button>
+            <button class="recur-day-btn" data-day="2" onclick="toggleRecurDay(this)">Tue</button>
+            <button class="recur-day-btn" data-day="3" onclick="toggleRecurDay(this)">Wed</button>
+            <button class="recur-day-btn" data-day="4" onclick="toggleRecurDay(this)">Thu</button>
+            <button class="recur-day-btn" data-day="5" onclick="toggleRecurDay(this)">Fri</button>
+            <button class="recur-day-btn" data-day="6" onclick="toggleRecurDay(this)">Sat</button>
+            <button class="recur-day-btn" data-day="0" onclick="toggleRecurDay(this)">Sun</button>
+          </div>
+        </div>
+        <div id="recur-preview" style="font-size:12px;color:var(--g500);margin-top:10px;line-height:1.6"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">4 — Location & purpose</div>
+      <div class="field">
+        <label>Equipment location *</label>
+        <div class="loc-toggle">
+          <button class="loc-btn active" id="loc-onsite" onclick="setLocation('onsite')">🏛 On-site</button>
+          <button class="loc-btn" id="loc-offsite" onclick="setLocation('offsite')">🚐 Off-site</button>
+        </div>
+      </div>
+      <div class="field" id="field-offsite-detail" style="display:none">
+        <label>Off-site destination *</label>
+        <input type="text" id="f-offsite-loc" placeholder="e.g. Virginia Key Beach Park, Biscayne Bay..." />
+      </div>
+      <div class="field"><label>Department / program *</label><input type="text" id="f-dept" placeholder="e.g. Your Shores, UBMS, Discovery Lab..." /></div>
+      <div class="field"><label>Additional notes</label><textarea id="f-notes" placeholder="Any extra context for the admin..."></textarea></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:6px">
+        <p style="font-size:12px;color:var(--g400)">Each equipment type is reviewed separately by an admin.</p>
+        <button class="btn btn-primary" onclick="submitBooking()">Submit request →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALENDAR PAGE -->
+  <div id="page-calendar" class="page">
+    <div class="page-title">Booking Calendar</div>
+    <div class="page-sub">Click any booking to see full details.</div>
+    <div class="card">
+      <div class="cal-nav">
+        <h2 id="cal-month-label"></h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn-sm" onclick="calPrev()">← Prev</button>
+          <button class="btn-sm" onclick="calNext()">Next →</button>
+        </div>
+      </div>
+      <div class="cal-filter" id="cal-filter-btns"></div>
+      <table class="cal-table">
+        <thead><tr id="cal-head"></tr></thead>
+        <tbody id="cal-body"></tbody>
+      </table>
+      <div class="cal-legend">
+        <span><span class="ldot" style="background:var(--green-lt);border:1px solid #86efac"></span>Approved</span>
+        <span><span class="ldot" style="background:var(--amber-lt);border:1px solid #fcd34d"></span>Pending</span>
+        <span><span class="ldot" style="background:var(--red-lt);border:1px solid #fca5a5"></span>Denied</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MY BOOKINGS PAGE -->
+  <div id="page-mybookings" class="page">
+    <div class="page-title">My Bookings</div>
+    <div class="page-sub">Look up your reservations by email address.</div>
+    <div class="card">
+      <div class="lookup-bar">
+        <div class="field"><input type="email" id="lookup-email" placeholder="Enter your email address..." onkeydown="if(event.key==='Enter')lookupBookings()" /></div>
+        <button class="btn btn-primary" onclick="lookupBookings()">Look up</button>
+      </div>
+      <div id="my-bookings-results"></div>
+    </div>
+  </div>
+
+  <!-- ADMIN PAGE -->
+  <div id="page-admin" class="page">
+
+    <!-- LOGIN / REGISTER SCREEN -->
+    <div id="admin-auth-screen" class="auth-wrap">
+      <div class="auth-card">
+        <div class="auth-icon">🔐</div>
+        <h2>Admin Portal</h2>
+        <p>Frost Science Equipment Reservations</p>
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-signin" onclick="switchAuthTab('signin')">Sign in</button>
+          <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Register</button>
+        </div>
+
+        <!-- SIGN IN -->
+        <div id="auth-signin">
+          <div class="field"><label>Email</label><input type="email" id="signin-email" placeholder="you@frostscience.org" /></div>
+          <div class="field"><label>Password</label><input type="password" id="signin-pw" placeholder="Password" onkeydown="if(event.key==='Enter')adminSignIn()" /></div>
+          <div id="signin-error" class="alert alert-error" style="margin-bottom:10px"></div>
+          <button class="btn btn-primary" style="width:100%" onclick="adminSignIn()">Sign in →</button>
+        </div>
+
+        <!-- REGISTER -->
+        <div id="auth-register" style="display:none">
+          <div id="register-alert-info" class="alert alert-info" style="display:block;margin-bottom:12px;font-size:13px">
+            New admins must be invited by an existing admin. Enter your email to check if you've been invited.
+          </div>
+          <div class="field"><label>Full name</label><input type="text" id="reg-name" placeholder="First Last" /></div>
+          <div class="field"><label>Email</label><input type="email" id="reg-email" placeholder="you@frostscience.org" /></div>
+          <div class="field"><label>Invite code</label><input type="text" id="reg-code" placeholder="Enter the invite code you received" /></div>
+          <div class="field"><label>Password</label><input type="password" id="reg-pw" placeholder="At least 8 characters" /></div>
+          <div class="field"><label>Confirm password</label><input type="password" id="reg-pw2" placeholder="Repeat password" /></div>
+          <div id="register-error" class="alert alert-error" style="margin-bottom:10px"></div>
+          <button class="btn btn-primary" style="width:100%" onclick="adminRegister()">Create account →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="admin-panel" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:10px">
+        <div>
+          <div class="page-title">Admin Panel</div>
+          <div class="page-sub" style="margin-bottom:0">Logged in as <strong id="admin-logged-name"></strong></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-sm" onclick="showChangePwModal()">Change password</button>
+          <button class="btn-sm btn-deny" onclick="adminSignOut()">Sign out</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card stat-pending"><div class="stat-val" id="stat-pending">0</div><div class="stat-label">Pending</div></div>
+        <div class="stat-card stat-approved"><div class="stat-val" id="stat-approved">0</div><div class="stat-label">Approved</div></div>
+        <div class="stat-card stat-denied"><div class="stat-val" id="stat-denied">0</div><div class="stat-label">Denied</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-total">0</div><div class="stat-label">Total requests</div></div>
+      </div>
+
+      <!-- BOOKING REQUESTS -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
+          <div class="card-title" style="margin-bottom:0">Booking Requests</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <select id="admin-sf" onchange="renderAdminList()" style="font-size:13px;padding:5px 10px;border:1px solid var(--g300);border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;cursor:pointer">
+              <option value="all">All statuses</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="denied">Denied</option>
+            </select>
+            <select id="admin-ef" onchange="renderAdminList()" style="font-size:13px;padding:5px 10px;border:1px solid var(--g300);border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;cursor:pointer">
+              <option value="all">All equipment</option>
+            </select>
+          </div>
+        </div>
+        <div id="admin-bookings-list"></div>
+      </div>
+
+      <!-- ADMIN ACCOUNTS -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
+          <div class="card-title" style="margin-bottom:0">Admin Accounts</div>
+          <button class="btn btn-primary" onclick="showInviteModal()" style="font-size:13px;padding:7px 14px">+ Invite admin</button>
+        </div>
+        <table class="admins-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="admins-table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- EQUIPMENT INVENTORY -->
+      <div class="card">
+        <div class="card-title">Equipment Inventory</div>
+        <div id="equip-inventory-list"></div>
+        <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--g100)">
+          <p style="font-size:13px;font-weight:600;color:var(--g700);margin-bottom:10px">Add new equipment type</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input type="text" id="new-equip-name" placeholder="Name (e.g. iPads)" style="flex:1;min-width:140px;padding:8px 12px;border:1px solid var(--g300);border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:14px" />
+            <input type="number" id="new-equip-qty" placeholder="Count" min="1" style="width:80px;padding:8px 12px;border:1px solid var(--g300);border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:14px" />
+            <input type="text" id="new-equip-prefix" placeholder="Prefix (e.g. IPAD)" style="width:130px;padding:8px 12px;border:1px solid var(--g300);border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:14px" />
+            <input type="text" id="new-equip-icon" placeholder="Emoji" style="width:70px;padding:8px 12px;border:1px solid var(--g300);border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:14px" />
+            <button class="btn btn-primary" onclick="addEquipType()">Add</button>
+          </div>
+          <p style="font-size:11px;color:var(--g400);margin-top:6px">Units auto-named PREFIX-01, PREFIX-02, etc.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- INVITE MODAL -->
+<div class="modal-overlay" id="invite-modal-overlay" onclick="closeInviteModal(event)">
+  <div class="modal" style="max-width:420px">
+    <button class="modal-close" onclick="closeInviteModalDirect()">✕</button>
+    <h3>Invite a new admin</h3>
+    <p style="font-size:13px;color:var(--g500);margin-bottom:1.25rem">Share the invite code below with the person you want to add. They'll use it when registering.</p>
+    <div class="field"><label>Their email address</label><input type="email" id="invite-email" placeholder="newadmin@frostscience.org" /></div>
+    <div id="invite-code-display" style="display:none;margin-bottom:1rem">
+      <label style="font-size:13px;font-weight:500;color:var(--g700);display:block;margin-bottom:5px">Invite code (share this)</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <code id="invite-code-val" style="flex:1;font-family:'DM Mono',monospace;font-size:15px;font-weight:500;background:var(--g100);padding:10px 14px;border-radius:var(--r-sm);color:var(--blue);letter-spacing:.1em"></code>
+        <button class="btn-sm" onclick="copyInviteCode()">Copy</button>
+      </div>
+    </div>
+    <div id="invite-error" class="alert alert-error" style="margin-bottom:10px"></div>
+    <button class="btn btn-primary" style="width:100%" onclick="generateInvite()">Generate invite code →</button>
+  </div>
+</div>
+
+<!-- CHANGE PW MODAL (for logged-in admins) -->
+<div class="modal-overlay" id="change-pw-overlay" onclick="closeChangePwModal(event)">
+  <div class="pw-modal">
+    <button class="modal-close" onclick="closeChangePwModalDirect()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:20px;cursor:pointer;color:var(--g500)">✕</button>
+    <h3>Change password</h3>
+    <p>Enter your current password, then choose a new one.</p>
+    <div class="field"><label>Current password</label><input type="password" id="cpw-current" placeholder="Current password" /></div>
+    <div class="field"><label>New password</label><input type="password" id="cpw-new" placeholder="At least 8 characters" /></div>
+    <div class="field"><label>Confirm new password</label><input type="password" id="cpw-confirm" placeholder="Repeat new password" /></div>
+    <div id="cpw-error" style="font-size:13px;color:var(--red);margin-bottom:10px;display:none"></div>
+    <div id="cpw-success" style="font-size:13px;color:var(--green);margin-bottom:10px;display:none">✓ Password updated successfully.</div>
+    <button class="btn btn-primary" style="width:100%" onclick="changePassword()">Update password</button>
+  </div>
+</div>
+
+<script>
+// ── INITIAL ADMIN ACCOUNTS ─────────────────────────────────────────────────
+const INITIAL_ADMINS = [
+  {email:'mpaglino@frostscience.org', name:'Marisa Paglino',   password:'Frost1101', mustChange:true},
+  {email:'aduran@frostscience.org',   name:'Analisa Duran',    password:'Frost1101', mustChange:true},
+  {email:'holivo@frostscience.org',   name:'Hidekel Olivo',    password:'Frost1101', mustChange:true},
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let bookings    = [];
+let equipTypes  = [
+  {id:'ubms', name:'UBMS Laptops',         prefix:'UBMS', total:30, icon:'💻'},
+  {id:'disc', name:'Discovery Lab Laptops', prefix:'DISC', total:25, icon:'💻'},
+  {id:'vr',   name:'VR Headsets',           prefix:'VR',   total:6,  icon:'🥽'},
+];
+let admins      = [];
+let invites     = []; // {code, email, createdBy, used}
+let nextId      = 1;
+let currentAdmin= null;
+let selections  = {};
+let selectedLocation = 'onsite';
+let recurDays   = new Set();
+let calYear     = new Date().getFullYear();
+let calMonth    = new Date().getMonth();
+let calFilter   = 'all';
+
+function loadState() {
+  try {
+    const b=localStorage.getItem('frostBookings');
+    const e=localStorage.getItem('frostEquipTypes');
+    const a=localStorage.getItem('frostAdmins');
+    const i=localStorage.getItem('frostInvites');
+    const n=localStorage.getItem('frostNextId');
+    if(b) bookings=JSON.parse(b);
+    if(e) equipTypes=JSON.parse(e);
+    if(n) nextId=parseInt(n);
+    if(i) invites=JSON.parse(i);
+    if(a) {
+      admins=JSON.parse(a);
+    } else {
+      // seed initial admins
+      admins=INITIAL_ADMINS.map(a=>({...a}));
+    }
+  } catch(e){ admins=INITIAL_ADMINS.map(a=>({...a})); }
+}
+loadState();
+
+function saveState() {
+  localStorage.setItem('frostBookings',JSON.stringify(bookings));
+  localStorage.setItem('frostEquipTypes',JSON.stringify(equipTypes));
+  localStorage.setItem('frostAdmins',JSON.stringify(admins));
+  localStorage.setItem('frostInvites',JSON.stringify(invites));
+  localStorage.setItem('frostNextId',String(nextId));
+}
+
+// ── NAV ────────────────────────────────────────────────────────────────────
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('visible'));
+  document.querySelectorAll('.hnav button').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('visible');
+  ['book','calendar','mybookings','admin'].forEach((n,i)=>{
+    if(n===p) document.querySelectorAll('.hnav button')[i].classList.add('active');
+  });
+  if(p==='calendar') renderCalendar();
+  if(p==='admin'&&currentAdmin) refreshAdmin();
+}
+
+// ── EQUIPMENT SELECT ───────────────────────────────────────────────────────
+function getAvailableUnits(equipId, dates) {
+  const type=equipTypes.find(t=>t.id===equipId);
+  if(!type) return [];
+  const all=Array.from({length:type.total},(_,i)=>type.prefix+'-'+String(i+1).padStart(2,'0'));
+  const booked=new Set();
+  bookings.forEach(b=>{
+    if(b.equipId===equipId&&b.status!=='denied'){
+      const bDates=b.dates||[b.date];
+      if(dates.some(d=>bDates.includes(d))) (b.units||[]).forEach(u=>booked.add(u));
+    }
+  });
+  return all.filter(u=>!booked.has(u));
+}
+
+function getSelectedDates() {
+  const start=document.getElementById('f-date-start').value;
+  const type=document.getElementById('f-type').value;
+  const recur=document.getElementById('f-recur-type').value;
+  if(!start) return [];
+  if(type==='hour'||recur==='single') return [start];
+  const endEl=document.getElementById('f-date-end');
+  const end=endEl?endEl.value:'';
+  if(!end||end<start) return [start];
+  const dates=[];
+  let cur=new Date(start+'T12:00:00');
+  const endD=new Date(end+'T12:00:00');
+  while(cur<=endD){
+    const ds=cur.toISOString().split('T')[0];
+    if(recur==='daily') dates.push(ds);
+    else if(recur==='weekly'){ if(recurDays.size===0||recurDays.has(cur.getDay())) dates.push(ds); }
+    cur.setDate(cur.getDate()+1);
+  }
+  return dates;
+}
+
+function renderEquipSelect() {
+  const dates=getSelectedDates();
+  const area=document.getElementById('equip-select-area');
+  area.innerHTML=equipTypes.map(t=>{
+    const avail=getAvailableUnits(t.id,dates.length?dates:[]);
+    const sel=selections[t.id]||0;
+    const isSel=sel>0;
+    const isUnavail=avail.length===0&&!isSel;
+    const assigned=isSel?avail.slice(0,sel):[];
+    return `<div class="equip-row${isSel?' selected':''}${isUnavail?' unavailable':''}" id="equip-row-${t.id}" onclick="toggleEquip('${t.id}')">
+      <div class="equip-check"><div class="equip-check-inner"></div></div>
+      <div class="equip-icon">${t.icon}</div>
+      <div class="equip-info">
+        <div class="equip-name">${t.name}</div>
+        <div class="equip-avail">${avail.length} available${dates.length>1?' across '+dates.length+' days':''}</div>
+        ${isSel&&dates.length?`<div class="units-tags">${assigned.map(u=>`<span class="unit-tag">${u}</span>`).join('')}</div>`:''}
+      </div>
+      ${isSel?`<div class="equip-qty-area" onclick="event.stopPropagation()">
+        <button class="qty-btn" onclick="changeQty('${t.id}',-1)">−</button>
+        <span class="qty-num">${sel}</span>
+        <button class="qty-btn" onclick="changeQty('${t.id}',1)">+</button>
+      </div>`:''}
+    </div>`;
+  }).join('');
+  updateRecurPreview();
+}
+
+function toggleEquip(id){
+  if(selections[id]) delete selections[id]; else selections[id]=1;
+  renderEquipSelect();
+}
+function changeQty(id,delta){
+  const dates=getSelectedDates();
+  const avail=getAvailableUnits(id,dates.length?dates:[]);
+  selections[id]=Math.max(1,Math.min(avail.length,(selections[id]||1)+delta));
+  renderEquipSelect();
+}
+
+// ── DATE/RECUR ─────────────────────────────────────────────────────────────
+function onTypeChange(){
+  const hourly=document.getElementById('f-type').value==='hour';
+  document.getElementById('field-time-start').style.display=hourly?'':'none';
+  document.getElementById('field-time-end').style.display=hourly?'':'none';
+  document.getElementById('recur-options').style.display=hourly?'none':'';
+  renderEquipSelect();
+}
+function onDateChange(){
+  const start=document.getElementById('f-date-start').value;
+  const endEl=document.getElementById('f-date-end');
+  if(endEl){
+    endEl.min=start||new Date().toISOString().split('T')[0];
+    if(endEl.value&&endEl.value<start) endEl.value=start;
+  }
+  renderEquipSelect();
+}
+function onRecurChange(){
+  const v=document.getElementById('f-recur-type').value;
+  document.getElementById('recur-date-range').style.display=(v==='daily'||v==='weekly')?'':'none';
+  document.getElementById('recur-days-wrap').style.display=v==='weekly'?'':'none';
+  renderEquipSelect();
+}
+function toggleRecurDay(btn){
+  const d=parseInt(btn.dataset.day);
+  if(recurDays.has(d)){recurDays.delete(d);btn.classList.remove('active');}
+  else{recurDays.add(d);btn.classList.add('active');}
+  renderEquipSelect();
+}
+function updateRecurPreview(){
+  const dates=getSelectedDates();
+  const el=document.getElementById('recur-preview');
+  if(!el) return;
+  if(dates.length>1) el.textContent=`${dates.length} booking days selected: ${dates[0]} → ${dates[dates.length-1]}`;
+  else el.textContent='';
+}
+
+// ── LOCATION ───────────────────────────────────────────────────────────────
+function setLocation(loc){
+  selectedLocation=loc;
+  document.getElementById('loc-onsite').classList.toggle('active',loc==='onsite');
+  document.getElementById('loc-offsite').classList.toggle('active',loc==='offsite');
+  document.getElementById('field-offsite-detail').style.display=loc==='offsite'?'':'none';
+}
+
+// ── SUBMIT BOOKING ─────────────────────────────────────────────────────────
+function submitBooking(){
+  const name=document.getElementById('f-name').value.trim();
+  const email=document.getElementById('f-email').value.trim();
+  const dept=document.getElementById('f-dept').value.trim();
+  const notes=document.getElementById('f-notes').value.trim();
+  const type=document.getElementById('f-type').value;
+  const offsiteLoc=selectedLocation==='offsite'?document.getElementById('f-offsite-loc').value.trim():'';
+  const dates=getSelectedDates();
+  const errEl=document.getElementById('alert-error');
+  const okEl=document.getElementById('alert-success');
+  const selIds=Object.keys(selections);
+  if(!name||!email||!dept||!dates.length||!selIds.length){
+    showAlert(errEl,'Please complete all required fields and select at least one equipment type.'); return;
+  }
+  if(selectedLocation==='offsite'&&!offsiteLoc){
+    showAlert(errEl,'Please enter the off-site destination.'); return;
+  }
+  const groupId='grp-'+Date.now();
+  let allOk=true;
+  selIds.forEach(equipId=>{
+    const qty=selections[equipId];
+    const avail=getAvailableUnits(equipId,dates);
+    const units=avail.slice(0,qty);
+    if(units.length<qty){allOk=false;return;}
+    bookings.push({id:nextId++,groupId,name,email,dept,notes,equipId,
+      equipName:equipTypes.find(t=>t.id===equipId).name,qty,units,dates,
+      date:dates[0],type,location:selectedLocation,locationDetail:offsiteLoc,
+      status:'pending',createdAt:new Date().toISOString(),
+      ...(type==='hour'?{start:document.getElementById('f-start').value,end:document.getElementById('f-end').value}:{})
+    });
+  });
+  if(!allOk){showAlert(errEl,'Not enough units available on selected dates. Please reduce quantity or change dates.');return;}
+  saveState();
+  okEl.style.display='block'; errEl.style.display='none';
+  setTimeout(()=>okEl.style.display='none',5000);
+  selections={};
+  ['f-name','f-email','f-dept','f-notes','f-date-start','f-date-end','f-offsite-loc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  setLocation('onsite');
+  renderEquipSelect();
+}
+
+function showAlert(el,msg){el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',4500);}
+
+// ── CALENDAR ──────────────────────────────────────────────────────────────
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function renderCalendar(){
+  document.getElementById('cal-month-label').textContent=MONTHS[calMonth]+' '+calYear;
+  const fb=document.getElementById('cal-filter-btns');
+  fb.innerHTML=[['all','All'],...equipTypes.map(t=>[t.id,t.name.split(' ').slice(0,2).join(' ')])].map(([id,label])=>
+    `<button class="cal-filter-btn${calFilter===id?' active':''}" onclick="setCalFilter('${id}')">${label}</button>`
+  ).join('');
+  document.getElementById('cal-head').innerHTML=DAYS.map(d=>`<th>${d}</th>`).join('');
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const todayStr=new Date().toISOString().split('T')[0];
+  let html='<tr>';
+  for(let i=0;i<firstDay;i++) html+='<td class="cal-cell other"></td>';
+  let col=firstDay;
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const isToday=ds===todayStr;
+    const dayBookings=bookings.filter(b=>(b.dates||[b.date]).includes(ds)&&(calFilter==='all'||b.equipId===calFilter)&&b.status!=='denied');
+    const seen=new Set();
+    const pills=dayBookings.filter(b=>{if(seen.has(b.groupId))return false;seen.add(b.groupId);return true;});
+    const pillsHtml=pills.map(b=>{
+      const loc=b.location==='offsite'?(b.locationDetail||'Off-site'):'On-site';
+      return `<span class="cal-pill ${b.status}" onclick="openModal(${b.id})">${b.name.split(' ')[0]} · ${loc}</span>`;
+    }).join('');
+    html+=`<td class="cal-cell${isToday?' today':''}"><span class="day-num">${d}</span>${pillsHtml}</td>`;
+    col++;
+    if(col%7===0&&d<daysInMonth) html+='</tr><tr>';
+  }
+  while(col%7!==0){html+='<td class="cal-cell other"></td>';col++;}
+  html+='</tr>';
+  document.getElementById('cal-body').innerHTML=html;
+}
+function setCalFilter(f){calFilter=f;renderCalendar();}
+function calPrev(){if(calMonth===0){calMonth=11;calYear--;}else calMonth--;renderCalendar();}
+function calNext(){if(calMonth===11){calMonth=0;calYear++;}else calMonth++;renderCalendar();}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────
+function openModal(bookingId){
+  const b=bookings.find(x=>x.id===bookingId);
+  if(!b) return;
+  const group=bookings.filter(x=>x.groupId===b.groupId);
+  const dates=b.dates||[b.date];
+  const dateStr=dates.length>1?`${dates[0]} → ${dates[dates.length-1]} (${dates.length} days)`:dates[0];
+  const timeStr=b.type==='hour'?`${b.start} – ${b.end}`:'Full day';
+  const locStr=b.location==='offsite'?`Off-site${b.locationDetail?' — '+b.locationDetail:''}`:'On-site';
+  document.getElementById('modal-title').textContent=b.name+' · '+b.dept;
+  document.getElementById('modal-body').innerHTML=`
+    <div class="modal-field"><span class="modal-label">Requester</span><span class="modal-val">${b.name}<br><span style="color:var(--g500);font-size:12px">${b.email}</span></span></div>
+    <div class="modal-field"><span class="modal-label">Date(s)</span><span class="modal-val">${dateStr}</span></div>
+    <div class="modal-field"><span class="modal-label">Time</span><span class="modal-val">${timeStr}</span></div>
+    <div class="modal-field"><span class="modal-label">Location</span><span class="modal-val"><span class="badge ${b.location==='offsite'?'badge-offsite':'badge-onsite'}">${locStr}</span></span></div>
+    <div class="modal-field"><span class="modal-label">Program</span><span class="modal-val">${b.dept}</span></div>
+    ${b.notes?`<div class="modal-field"><span class="modal-label">Notes</span><span class="modal-val">${b.notes}</span></div>`:''}
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--g100)">
+      <div style="font-size:12px;font-weight:600;color:var(--g500);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Equipment</div>
+      ${group.map((g,i)=>`${i>0?'<hr style="border:none;border-top:1px solid var(--g100);margin:8px 0">':''}<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:500">${g.equipName} ×${g.qty}</span><span class="badge badge-${g.status}">${g.status}</span></div><div class="modal-units">${(g.units||[]).join(' · ')}</div>`).join('')}
+    </div>`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(e){if(e.target===document.getElementById('modal-overlay'))closeModalDirect();}
+function closeModalDirect(){document.getElementById('modal-overlay').classList.remove('open');}
+
+// ── MY BOOKINGS ───────────────────────────────────────────────────────────
+function lookupBookings(){
+  const email=document.getElementById('lookup-email').value.trim().toLowerCase();
+  const el=document.getElementById('my-bookings-results');
+  const matches=bookings.filter(b=>b.email.toLowerCase()===email);
+  if(!matches.length){el.innerHTML='<p style="font-size:14px;color:var(--g400);text-align:center;padding:1.5rem 0">No bookings found for that email.</p>';return;}
+  el.innerHTML=matches.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).map(b=>bookingRowHTML(b,false)).join('');
+}
+
+// ── ADMIN AUTH ─────────────────────────────────────────────────────────────
+function switchAuthTab(tab){
+  document.getElementById('auth-signin').style.display=tab==='signin'?'':'none';
+  document.getElementById('auth-register').style.display=tab==='register'?'':'none';
+  document.getElementById('tab-signin').classList.toggle('active',tab==='signin');
+  document.getElementById('tab-register').classList.toggle('active',tab==='register');
+}
+
+function adminSignIn(){
+  const email=document.getElementById('signin-email').value.trim().toLowerCase();
+  const pw=document.getElementById('signin-pw').value;
+  const errEl=document.getElementById('signin-error');
+  const admin=admins.find(a=>a.email.toLowerCase()===email);
+  if(!admin||admin.password!==pw){
+    errEl.textContent='Incorrect email or password.';errEl.style.display='block';
+    setTimeout(()=>errEl.style.display='none',3000);return;
+  }
+  currentAdmin=admin;
+  if(admin.mustChange){
+    document.getElementById('pw-modal-overlay').classList.add('open');
+    return;
+  }
+  completeSignIn();
+}
+
+function saveNewPassword(){
+  const pw=document.getElementById('pw-new').value;
+  const pw2=document.getElementById('pw-confirm').value;
+  const errEl=document.getElementById('pw-error');
+  if(pw.length<8){errEl.textContent='Password must be at least 8 characters.';errEl.style.display='block';return;}
+  if(pw!==pw2){errEl.textContent='Passwords do not match.';errEl.style.display='block';return;}
+  currentAdmin.password=pw;
+  currentAdmin.mustChange=false;
+  saveState();
+  document.getElementById('pw-modal-overlay').classList.remove('open');
+  completeSignIn();
+}
+
+function completeSignIn(){
+  document.getElementById('admin-auth-screen').style.display='none';
+  document.getElementById('admin-panel').style.display='block';
+  document.getElementById('admin-logged-name').textContent=currentAdmin.name;
+  document.getElementById('admin-header-badge').style.display='inline-flex';
+  document.getElementById('admin-header-name').textContent='👤 '+currentAdmin.name.split(' ')[0];
+  refreshAdmin();
+}
+
+function adminSignOut(){
+  currentAdmin=null;
+  document.getElementById('admin-panel').style.display='none';
+  document.getElementById('admin-auth-screen').style.display='flex';
+  document.getElementById('admin-header-badge').style.display='none';
+  document.getElementById('signin-pw').value='';
+}
+
+function adminRegister(){
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim().toLowerCase();
+  const code=document.getElementById('reg-code').value.trim().toUpperCase();
+  const pw=document.getElementById('reg-pw').value;
+  const pw2=document.getElementById('reg-pw2').value;
+  const errEl=document.getElementById('register-error');
+
+  if(!name||!email||!code||!pw){showAlert(errEl,'Please fill in all fields.');return;}
+  if(pw.length<8){showAlert(errEl,'Password must be at least 8 characters.');return;}
+  if(pw!==pw2){showAlert(errEl,'Passwords do not match.');return;}
+  if(admins.find(a=>a.email.toLowerCase()===email)){showAlert(errEl,'An account with this email already exists.');return;}
+
+  const invite=invites.find(i=>i.code===code&&i.email.toLowerCase()===email&&!i.used);
+  if(!invite){showAlert(errEl,'Invalid or already-used invite code for this email.');return;}
+
+  invite.used=true;
+  admins.push({email,name,password:pw,mustChange:false});
+  saveState();
+  currentAdmin=admins[admins.length-1];
+  completeSignIn();
+}
+
+// ── INVITE ─────────────────────────────────────────────────────────────────
+function showInviteModal(){
+  document.getElementById('invite-email').value='';
+  document.getElementById('invite-code-display').style.display='none';
+  document.getElementById('invite-error').style.display='none';
+  document.getElementById('invite-modal-overlay').classList.add('open');
+}
+function closeInviteModal(e){if(e.target===document.getElementById('invite-modal-overlay'))closeInviteModalDirect();}
+function closeInviteModalDirect(){document.getElementById('invite-modal-overlay').classList.remove('open');}
+
+function generateInvite(){
+  const email=document.getElementById('invite-email').value.trim().toLowerCase();
+  const errEl=document.getElementById('invite-error');
+  if(!email){showAlert(errEl,'Please enter an email address.');return;}
+  if(admins.find(a=>a.email.toLowerCase()===email)){showAlert(errEl,'This email already has an admin account.');return;}
+  const code=Math.random().toString(36).substring(2,8).toUpperCase();
+  invites.push({code,email,createdBy:currentAdmin.email,used:false,createdAt:new Date().toISOString()});
+  saveState();
+  document.getElementById('invite-code-val').textContent=code;
+  document.getElementById('invite-code-display').style.display='block';
+  errEl.style.display='none';
+  renderAdminsTable();
+}
+
+function copyInviteCode(){
+  const code=document.getElementById('invite-code-val').textContent;
+  navigator.clipboard.writeText(code).then(()=>{
+    const btn=document.querySelector('#invite-modal-overlay .btn-sm');
+    btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000);
+  });
+}
+
+// ── CHANGE PASSWORD ────────────────────────────────────────────────────────
+function showChangePwModal(){
+  ['cpw-current','cpw-new','cpw-confirm'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('cpw-error').style.display='none';
+  document.getElementById('cpw-success').style.display='none';
+  document.getElementById('change-pw-overlay').classList.add('open');
+}
+function closeChangePwModal(e){if(e.target===document.getElementById('change-pw-overlay'))closeChangePwModalDirect();}
+function closeChangePwModalDirect(){document.getElementById('change-pw-overlay').classList.remove('open');}
+
+function changePassword(){
+  const cur=document.getElementById('cpw-current').value;
+  const nw=document.getElementById('cpw-new').value;
+  const cf=document.getElementById('cpw-confirm').value;
+  const errEl=document.getElementById('cpw-error');
+  const okEl=document.getElementById('cpw-success');
+  if(cur!==currentAdmin.password){errEl.textContent='Current password is incorrect.';errEl.style.display='block';okEl.style.display='none';return;}
+  if(nw.length<8){errEl.textContent='New password must be at least 8 characters.';errEl.style.display='block';okEl.style.display='none';return;}
+  if(nw!==cf){errEl.textContent='Passwords do not match.';errEl.style.display='block';okEl.style.display='none';return;}
+  currentAdmin.password=nw;
+  saveState();
+  errEl.style.display='none';okEl.style.display='block';
+  setTimeout(()=>{okEl.style.display='none';closeChangePwModalDirect();},2000);
+}
+
+// ── ADMIN PANEL ───────────────────────────────────────────────────────────
+function refreshAdmin(){updateStats();renderAdminList();renderAdminsTable();renderEquipInventory();updateAdminEquipFilter();}
+
+function updateStats(){
+  document.getElementById('stat-pending').textContent=bookings.filter(b=>b.status==='pending').length;
+  document.getElementById('stat-approved').textContent=bookings.filter(b=>b.status==='approved').length;
+  document.getElementById('stat-denied').textContent=bookings.filter(b=>b.status==='denied').length;
+  document.getElementById('stat-total').textContent=bookings.length;
+}
+
+function updateAdminEquipFilter(){
+  const sel=document.getElementById('admin-ef');
+  sel.innerHTML='<option value="all">All equipment</option>'+equipTypes.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+}
+
+function renderAdminList(){
+  const sf=document.getElementById('admin-sf').value;
+  const ef=document.getElementById('admin-ef').value;
+  const filtered=bookings.filter(b=>(sf==='all'||b.status===sf)&&(ef==='all'||b.equipId===ef)).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+  const el=document.getElementById('admin-bookings-list');
+  if(!filtered.length){el.innerHTML='<p style="font-size:13px;color:var(--g400);padding:1rem 0">No bookings match these filters.</p>';return;}
+  el.innerHTML=filtered.map(b=>bookingRowHTML(b,true)).join('');
+}
+
+function bookingRowHTML(b,isAdmin){
+  const dates=b.dates||[b.date];
+  const dateStr=dates.length>1?`${dates[0]} → ${dates[dates.length-1]} (${dates.length}d)`:dates[0];
+  const timeStr=b.type==='hour'?` · ${b.start}–${b.end}`:'· Full day';
+  const locLabel=b.location==='offsite'?`Off-site${b.locationDetail?' — '+b.locationDetail:''}`:'On-site';
+  return `<div class="booking-row">
+    <div class="booking-main">
+      <div class="booking-name">${b.name} ${isAdmin?`<span class="booking-email">&lt;${b.email}&gt;</span>`:''}</div>
+      <div class="booking-detail">${b.equipName} ×${b.qty} · ${dateStr} ${timeStr}</div>
+      <div class="booking-detail" style="margin-top:2px"><span class="badge ${b.location==='offsite'?'badge-offsite':'badge-onsite'}">${locLabel}</span> <span style="color:var(--g500);font-size:12px;margin-left:4px">${b.dept}</span></div>
+      <div class="booking-units">${(b.units||[]).join(' · ')}</div>
+      ${b.notes?`<div class="booking-notes">${b.notes}</div>`:''}
+    </div>
+    <div class="booking-actions">
+      <span class="badge badge-${b.status}">${b.status}</span>
+      ${isAdmin&&b.status==='pending'?`<button class="btn-sm btn-approve" onclick="setStatus(${b.id},'approved')">Approve</button><button class="btn-sm btn-deny" onclick="setStatus(${b.id},'denied')">Deny</button>`:''}
+      ${isAdmin&&b.status!=='pending'?`<button class="btn-sm" onclick="setStatus(${b.id},'pending')">Reset</button>`:''}
+      ${isAdmin?`<button class="btn-sm btn-deny" onclick="deleteBooking(${b.id})">Delete</button>`:''}
+    </div>
+  </div>`;
+}
+
+function setStatus(id,status){
+  const b=bookings.find(b=>b.id===id);
+  if(b){b.status=status;saveState();refreshAdmin();}
+}
+function deleteBooking(id){
+  if(!confirm('Delete this booking permanently?')) return;
+  bookings=bookings.filter(b=>b.id!==id);
+  saveState();refreshAdmin();
+}
+
+function renderAdminsTable(){
+  const tbody=document.getElementById('admins-table-body');
+  tbody.innerHTML=admins.map(a=>{
+    const initials=a.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+    const pendingInvites=invites.filter(i=>i.email.toLowerCase()===a.email.toLowerCase()&&!i.used);
+    return `<tr>
+      <td style="display:flex;align-items:center;gap:0"><div class="admin-avatar">${initials}</div>${a.name}</td>
+      <td>${a.email}</td>
+      <td><span class="badge ${a.mustChange?'badge-pending':'badge-approved'}">${a.mustChange?'Needs password change':'Active'}</span></td>
+      <td>${currentAdmin&&currentAdmin.email!==a.email?`<button class="btn-sm btn-deny" onclick="removeAdmin('${a.email}')">Remove</button>`:'<span style="font-size:12px;color:var(--g400)">You</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function removeAdmin(email){
+  if(!confirm('Remove this admin account?')) return;
+  admins=admins.filter(a=>a.email!==email);
+  saveState();renderAdminsTable();
+}
+
+function renderEquipInventory(){
+  const el=document.getElementById('equip-inventory-list');
+  const todayStr=new Date().toISOString().split('T')[0];
+  el.innerHTML=equipTypes.map((t,i)=>{
+    const avail=getAvailableUnits(t.id,[todayStr]).length;
+    return `<div class="equip-mgmt-row">
+      <span style="font-size:20px">${t.icon}</span>
+      <div class="equip-mgmt-name">${t.name}</div>
+      <div class="equip-mgmt-count">${t.total} total · ${avail} available today</div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--g400)">prefix: ${t.prefix}</div>
+      ${equipTypes.length>1?`<button class="btn-sm btn-deny" onclick="removeEquipType(${i})">Remove</button>`:''}
+    </div>`;
+  }).join('');
+}
+
+function addEquipType(){
+  const name=document.getElementById('new-equip-name').value.trim();
+  const total=parseInt(document.getElementById('new-equip-qty').value);
+  const prefix=document.getElementById('new-equip-prefix').value.trim().toUpperCase().replace(/\s+/g,'-');
+  const icon=document.getElementById('new-equip-icon').value.trim()||'💻';
+  if(!name||isNaN(total)||total<1||!prefix){alert('Please fill in name, count, and prefix.');return;}
+  equipTypes.push({id:prefix.toLowerCase()+Date.now(),name,prefix,total,icon});
+  saveState();
+  ['new-equip-name','new-equip-qty','new-equip-prefix','new-equip-icon'].forEach(id=>document.getElementById(id).value='');
+  refreshAdmin();renderEquipSelect();
+}
+function removeEquipType(i){
+  if(!confirm(`Remove ${equipTypes[i].name}?`)) return;
+  equipTypes.splice(i,1);saveState();refreshAdmin();renderEquipSelect();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+document.getElementById('f-date-start').min=new Date().toISOString().split('T')[0];
+onTypeChange();
+renderEquipSelect();
+renderCalendar();
+</script>
+</body>
+</html>
